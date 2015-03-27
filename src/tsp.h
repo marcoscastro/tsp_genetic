@@ -25,9 +25,10 @@ class Graph
 private:
 	int V; // number of vertices
 	int total_edges; // total of edges
+	int initial_vertex; // initial vertex
 	std::vector<Edge> edges; // vector of edges
 public:
-	Graph(int V); // constructor
+	Graph(int V, int initial_vertex); // constructor
 	void addEdge(int v1, int v2, int weight); // adds a edge
 	void showGraph(); // shows all the links of the graph
 	bool existsEdge(int src, int dest); // checks if exists a edge

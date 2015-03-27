@@ -4,8 +4,10 @@ using namespace std;
 
 int main()
 {
-	srand(time(NULL));
-	Graph * graph1 = new Graph(5); // creates the graph
+	srand(time(NULL)); // random numbers
+	
+	// creates the graph with parameters: number of vertexes and initial vertex
+	Graph * graph1 = new Graph(5, 0);
 	
 	// add edges
 	graph1->addEdge(0, 1, 1);

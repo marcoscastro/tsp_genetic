@@ -31,3 +31,4 @@
 *.geany
 src/main
 src/tsp
+*.ssh

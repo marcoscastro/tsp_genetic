@@ -13,7 +13,7 @@ Edge::Edge(int src, int dest, int weight) // constructor of Edge
 }
 
 
-Graph::Graph(int V) // constructor of Graph
+Graph::Graph(int V, int initial_vertex) // constructor of Graph
 {
 	if(V < 1) // checks if number of vertexes is less than 1
 	{
@@ -22,6 +22,7 @@ Graph::Graph(int V) // constructor of Graph
 	}
 	
 	this->V = V; // assigns the number of vertices
+	this->initial_vertex = initial_vertex; // assigns initial vertex
 	this->total_edges = 0; // initially the total of edges is 0
 }
 
@@ -81,39 +82,34 @@ Genetic::Genetic(Graph* graph, int size_population, int iterations) // construct
 int Genetic::isValidSolution(vector<int>& solution)
 {
 	set<int> my_set;
-	int size_solution = solution.size();
 	int total_cost = 0;
 	
 	// puts in set to eliminate repeated elements
-	for(int i = 0; i < size_solution; i++)
+	for(int i = 0; i < graph->V; i++)
 		my_set.insert(solution[i]);
-	
-	// checks if set's size is equal total number of vertices
-	if(my_set.size() == (unsigned)graph->V)
+
+	// checks if connections are valid
+	for(int i = 0; i < graph->V; i++)
 	{
-		// checks if connections are valid
-		for(int i = 0; i < size_solution; i++)
+		if(i + 1 <  graph->V)
 		{
-			if(i + 1 < size_solution)
-			{
-				// checks if exists connection
-				if(!graph->existsEdge(solution[i], solution[i+1]))
-					return -1;
-				else
-					total_cost += graph->getWeightEdge(solution[i], solution[i+1]);
-			}
+			// checks if exists connection
+			if(!graph->existsEdge(solution[i], solution[i+1]))
+				return -1;
 			else
-			{
-				if(!graph->existsEdge(solution[i], solution[0]))
-					return -1;
-				else
-					total_cost += graph->getWeightEdge(solution[i], solution[0]);
-				break;
-			}
+				total_cost += graph->getWeightEdge(solution[i], solution[i+1]);
 		}
-		return total_cost;
+		else
+		{
+			// checks if exists connection
+			if(!graph->existsEdge(solution[i], solution[0]))
+				return -1;
+			else
+				total_cost += graph->getWeightEdge(solution[i], solution[0]);
+			break;
+		}
 	}
-	return -1;
+	return total_cost;
 }
 
 
@@ -145,8 +141,14 @@ void Genetic::initialPopulation() // generates the initial population
 {
 	vector<int> parent;
 	
-	for(int i = 0; i < graph->V; i++)
-		parent.push_back(i);
+	// inserts initial vertex
+	parent.push_back(graph->initial_vertex);
+	
+	for(int i = 1; i < graph->V; i++)
+	{
+		if(i != graph->initial_vertex)
+			parent.push_back(i);
+	}
 		
 	int total_cost = isValidSolution(parent);
 	if(total_cost != -1)
@@ -168,13 +170,12 @@ void Genetic::initialPopulation() // generates the initial population
 
 void Genetic::showPopulation()
 {
-	cout << "\nShowing population...\n\n";
+	cout << "\nShowing solutions...\n\n";
 	for(vector<pair<vector<int>, int> >::iterator it=population.begin(); it!=population.end(); ++it)
 	{
 		const vector<int>& vec = (*it).first; // gets the vector
-		int size_vector = vec.size();
 		
-		for(int i = 0; i < size_vector; i++)
+		for(int i = 0; i < graph->V; i++)
 			cout << vec[i] << " ";
 		cout << " | Cost: " << (*it).second << "\n";
 	}
