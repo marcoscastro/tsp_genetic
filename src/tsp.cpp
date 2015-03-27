@@ -1,6 +1,4 @@
 #include <iostream>
-#include <time.h> // time
-#include <stdlib.h> // srand, rand
 #include <algorithm> // sort
 #include "tsp.h"
 using namespace std;
@@ -75,7 +73,6 @@ Genetic::Genetic(Graph* graph, int size_population, int iterations) // construct
 	this->graph = graph;
 	this->size_population = size_population;
 	this->iterations = iterations;
-	srand(time(NULL)); // random numbers
 }
 
 
@@ -155,7 +152,7 @@ void Genetic::initialPopulation() // generates the initial population
 	if(total_cost != -1)
 		population.push_back(make_pair(parent, total_cost));
 		
-	for(int i = 0; i < size_population; i++)
+	for(int i = 1; i < size_population; i++)
 		crossOver(parent);
 		
 	size_population = population.size();
@@ -185,7 +182,7 @@ void Genetic::showPopulation()
 
 
 void Genetic::crossOver(vector<int>& parent)
-{	
+{
 	// generates points
 	int point1 = rand() % (graph->V - 1) + 1; // rand 1 until (graph->V - 1)
 	int point2 = rand() % (graph->V - point1) + point1;
@@ -284,7 +281,7 @@ void Genetic::run()
 	}
 	
 	showPopulation();
-		
+	
 	cout << "\nBest solution: ";
 	const vector<int>& vec = population[0].first;
 	for(int i = 0; i < graph->V; i++)

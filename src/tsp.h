@@ -4,6 +4,8 @@
 #include <vector>
 #include <set>
 #include <utility> // pair
+#include <time.h> // time
+#include <stdlib.h> // srand, rand
 
 
 // class that represents the edge of graph

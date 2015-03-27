@@ -4,6 +4,7 @@ using namespace std;
 
 int main()
 {
+	srand(time(NULL));
 	Graph * graph1 = new Graph(5); // creates the graph
 	
 	// add edges
@@ -25,9 +26,11 @@ int main()
 	graph1->addEdge(3, 2, 5);
 	graph1->addEdge(2, 4, 1);
 	graph1->addEdge(4, 2, 1);
+	graph1->addEdge(3, 4, 2);
+	graph1->addEdge(4, 3, 2);
 	
 	// parameters: the graph, population size and iterations
-	Genetic genetic(graph1, 1000, 10);
+	Genetic genetic(graph1, 50, 100);
 		
 	genetic.run(); // runs the genetic algorithm
 	
