@@ -29,5 +29,5 @@
 
 # geany
 *.geany
-main
-tsp
+src/main
+src/tsp
