@@ -38,16 +38,15 @@ public:
 
 typedef std::pair<std::vector<int>, int> my_pair;
 
-/*
-// old implementation: to insert an element, the vector is ordered
-struct sort_pred 
+
+// sort vector with pair
+struct sort_pred
 {
 	bool operator()(const my_pair& firstElem, const my_pair& secondElem)
 	{
 		return firstElem.second < secondElem.second;
 	}
 };
-*/
 
 // class that represents genetic algorithm
 class Genetic

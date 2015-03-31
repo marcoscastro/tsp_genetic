@@ -49,7 +49,7 @@ int main()
 	graph2->addEdge(3, 2, 2);
 	
 	// parameters: the graph, population size, iterations and mutation rate
-	Genetic genetic(graph1, 50, 100, 5);
+	Genetic genetic(graph2, 50, 100, 5);
 		
 	genetic.run(); // runs the genetic algorithm
 	
