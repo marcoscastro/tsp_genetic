@@ -31,35 +31,25 @@ void Graph::addEdge(int src, int dest, int weight) // add a edge
 {
 	Edge edge(src, dest, weight); // creates a edge
 	edges.push_back(edge); // adds edge in vector of edges
+	map_edges[make_pair(src, dest)] = weight; // adds edge in the map
 	total_edges++; // increments number total of edges
 }
 
 
 void Graph::showGraph() // shows all connections of the graph
 {	
-	for(int i = 0; i < total_edges; i++)
-		cout << edges[i].src << " linked to vertex " << edges[i].dest << " with weight " << edges[i].weight << endl; 
+	map<pair<int, int>, int>::iterator it;
+	for(it = map_edges.begin(); it != map_edges.end(); ++it)
+		cout << it->first.first << " linked to vertex " << it->first.second << " with weight " << it->second << endl;
 }
 
 
-bool Graph::existsEdge(int src, int dest) // checks if exists a edge
+int Graph::existsEdge(int src, int dest) // checks if exists a edge
 {
-	for(int i = 0; i < total_edges; i++)
-	{
-		if(src == edges[i].src && dest == edges[i].dest)
-			return true;
-	}
-	return false;
-}
-
-
-int Graph::getWeightEdge(int src, int dest) // get weight of the edge
-{
-	for(int i = 0; i < total_edges; i++)
-	{
-		if(src == edges[i].src && dest == edges[i].dest)
-			return edges[i].weight;
-	}
+	map<pair<int, int>,int>::iterator it = map_edges.find(make_pair(src, dest));
+	
+	if(it != map_edges.end())
+		return it->second; // returns cost
 	return -1;
 }
 
@@ -88,31 +78,30 @@ Genetic::Genetic(Graph* graph, int size_population, int iterations, int mutation
 // checks if is a valid solution, then return total cost of path else return -1
 int Genetic::isValidSolution(vector<int>& solution)
 {
-	set<int> my_set;
 	int total_cost = 0;
-	
-	// puts in set to eliminate repeated elements
-	for(int i = 0; i < graph->V; i++)
-		my_set.insert(solution[i]);
 
 	// checks if connections are valid
 	for(int i = 0; i < graph->V; i++)
 	{
 		if(i + 1 <  graph->V)
 		{
+			int cost = graph->existsEdge(solution[i], solution[i+1]);
+			
 			// checks if exists connection
-			if(!graph->existsEdge(solution[i], solution[i+1]))
+			if(cost == -1)
 				return -1;
 			else
-				total_cost += graph->getWeightEdge(solution[i], solution[i+1]);
+				total_cost += cost;
 		}
 		else
 		{
+			int cost = graph->existsEdge(solution[i], solution[0]);
+			
 			// checks if exists connection
-			if(!graph->existsEdge(solution[i], solution[0]))
+			if(cost == -1)
 				return -1;
 			else
-				total_cost += graph->getWeightEdge(solution[i], solution[0]);
+				total_cost += cost;
 			break;
 		}
 	}

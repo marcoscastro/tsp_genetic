@@ -2,7 +2,7 @@
 #define TSP_H
 
 #include <vector>
-#include <set>
+#include <map>
 #include <utility> // pair
 #include <time.h> // time
 #include <stdlib.h> // srand, rand
@@ -27,12 +27,12 @@ private:
 	int total_edges; // total of edges
 	int initial_vertex; // initial vertex
 	std::vector<Edge> edges; // vector of edges
+	std::map<std::pair<int, int>, int> map_edges; // map of the edges
 public:
 	Graph(int V, int initial_vertex); // constructor
 	void addEdge(int v1, int v2, int weight); // adds a edge
 	void showGraph(); // shows all the links of the graph
-	bool existsEdge(int src, int dest); // checks if exists a edge
-	int getWeightEdge(int src, int dest); // gets weight of the edge
+	int existsEdge(int src, int dest); // checks if exists a edge
 	friend class Genetic; // to access private membres this class
 };
 
