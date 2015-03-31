@@ -38,7 +38,8 @@ public:
 
 typedef std::pair<std::vector<int>, int> my_pair;
 
-// sort vector of pair
+/*
+// old implementation: to insert an element, the vector is ordered
 struct sort_pred 
 {
 	bool operator()(const my_pair& firstElem, const my_pair& secondElem)
@@ -46,6 +47,7 @@ struct sort_pred
 		return firstElem.second < secondElem.second;
 	}
 };
+*/
 
 // class that represents genetic algorithm
 class Genetic
@@ -64,7 +66,7 @@ public:
 	int isValidSolution(std::vector<int>& solution); // checks if a solution is valid
 	void showPopulation(); // shows population
 	void crossOver(std::vector<int>& parent); // makes the crossover
-	void insertBinarySearch(); // uses binary search to insert a element in the population
+	void insertBinarySearch(std::vector<int>& child, int total_cost); // uses binary search to insert
 	void run(); // runs genetic algorithm
 	bool existsChromosome(const std::vector<int> & v); // checks if exists the chromosome
 };

@@ -1,5 +1,5 @@
 #include <iostream>
-#include <algorithm> // sort. next_permutation
+#include <algorithm> // sort, next_permutation
 #include "tsp.h"
 using namespace std;
 
@@ -219,9 +219,15 @@ void Genetic::initialPopulation() // generates the initial population
 			// checks if random_parent is a valid solution and if not exists
 			if(total_cost != -1 && !existsChromosome(random_parent))
 			{
+				/*
+				// old implementation: to insert an element, the vector is ordered
 				population.push_back(make_pair(random_parent, total_cost)); // add in population
 				sort(population.begin(), population.end(), sort_pred()); // sort population
+				*/
+				
+				insertBinarySearch(random_parent, total_cost); // uses binary search to insert
 				real_size_population++; // increments real_size_population in the unit
+				
 				if(real_size_population == size_population) // checks the goal
 					break; // left the loop
 			}
@@ -314,24 +320,38 @@ void Genetic::crossOver(vector<int>& parent)
 		// add child in the population
 		
 		/*
-			Uses binary search algorithm to insert element in the
-			population vector. This serves to maintain the ordered vector.
-		*/
-		//insertBinarySearch();
-		
-		
 		// old implementation: to insert an element, the vector is ordered
 		
 		population.push_back(make_pair(child, total_cost)); // add in population
 		sort(population.begin(), population.end(), sort_pred()); // sort population
+		*/
+		
+		insertBinarySearch(child, total_cost); // uses binary search to insert
 		real_size_population++; // increments the real_size_population
 	}
 }
 
 
-void Genetic::insertBinarySearch()
+void Genetic::insertBinarySearch(vector<int>& child, int total_cost)
 {
-	//int imin = 0;
+	int imin = 0;
+	int imax = real_size_population - 1;
+	
+	while(imax >= imin)
+	{
+		int imid = imin + (imax - imin) / 2;
+		
+		if(total_cost == population[imid].second)
+		{
+			population.insert(population.begin() + imid, make_pair(child, total_cost));
+			return;
+		}
+		else if(total_cost > population[imid].second)
+			imin = imid + 1;
+		else
+			imax = imid - 1;
+	}
+	population.insert(population.begin() + imin, make_pair(child, total_cost));
 }
 
 
