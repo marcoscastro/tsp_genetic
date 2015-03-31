@@ -1,5 +1,5 @@
 #include <iostream>
-#include <algorithm> // sort
+#include <algorithm> // sort. next_permutation
 #include "tsp.h"
 using namespace std;
 
@@ -64,16 +64,23 @@ int Graph::getWeightEdge(int src, int dest) // get weight of the edge
 }
 
 
-Genetic::Genetic(Graph* graph, int size_population, int iterations) // constructor of Genetic
+Genetic::Genetic(Graph* graph, int size_population, int iterations, int mutation_rate) // constructor of Genetic
 {
-	if(size_population < 1) // checks if size of population is less than 0
+	if(size_population < 1) // checks if size of population is less than 1
 	{
-		cout << "Error: size_population <= 0\n";
+		cout << "Error: size_population < 1\n";
+		exit(1);
+	}
+	else if(mutation_rate < 0) // checks if mutation rate is less than 0
+	{
+		cout << "Error: mutation_rate < 0\n";
 		exit(1);
 	}
 	this->graph = graph;
 	this->size_population = size_population;
+	this->real_size_population = 0;
 	this->iterations = iterations;
+	this->mutation_rate = mutation_rate;
 }
 
 
@@ -144,6 +151,7 @@ void Genetic::initialPopulation() // generates the initial population
 	// inserts initial vertex
 	parent.push_back(graph->initial_vertex);
 	
+	// creates the parent
 	for(int i = 1; i < graph->V; i++)
 	{
 		if(i != graph->initial_vertex)
@@ -151,18 +159,79 @@ void Genetic::initialPopulation() // generates the initial population
 	}
 		
 	int total_cost = isValidSolution(parent);
-	if(total_cost != -1)
-		population.push_back(make_pair(parent, total_cost));
-		
-	for(int i = 1; i < size_population; i++)
+	int initial_index = 0;
+	
+	if(total_cost != -1) // checks if the parent is valid
+	{
+		population.push_back(make_pair(parent, total_cost)); // inserts in the population
+		real_size_population++; // increments real_size_population
+		initial_index = 1; // updates initial_index
+	}
+	
+	// makes crossover the from the parent "size_population" times
+	for(int i = initial_index; i < size_population; i++)
 		crossOver(parent);
 		
-	size_population = population.size();
-		
-	// removing repeat elements
-	if(size_population == 0)
+	/*
+		checks if real_size_population is more than 0 and
+		real_size_population is less than size_population
+		to try to fill the population until size_population
+	*/
+	if(real_size_population > 0 && (real_size_population < size_population))
 	{
-		cout << "Empty population ;( Try again runs the algorithm...\n";
+		int bound_real_size_population = real_size_population;
+		
+		// makes crossover with others parents to try to fill the population
+		for(int i = initial_index; i < bound_real_size_population; i++)
+		{
+			bool goal_size = false;
+			
+			for(int j = 0; j < size_population; j++)
+			{
+				crossOver(population[i].first); // makes crossover
+				if(real_size_population == size_population) // checks the goal
+				{
+					goal_size = true; // updates flag goal_size
+					break; // left the loop
+				}
+			}
+			if(goal_size)
+				break;
+		}	
+	}
+	
+	/*
+		if real_size_population still is less than size_population,
+		then select random "size_population" times
+	*/
+	if(real_size_population < size_population)
+	{
+		for(int i = 0; i < size_population; i++)
+		{
+			vector<int> random_parent;
+			
+			next_permutation(parent.begin() + 1, parent.begin() + graph->V); // gets permutation
+			for(int j = 0; j < graph->V; j++) // creates the random parent
+				random_parent.push_back(parent[j]);
+				
+			int total_cost = isValidSolution(random_parent); // checks if solution is valid
+			
+			// checks if random_parent is a valid solution and if not exists
+			if(total_cost != -1 && !existsChromosome(random_parent))
+			{
+				population.push_back(make_pair(random_parent, total_cost)); // add in population
+				sort(population.begin(), population.end(), sort_pred()); // sort population
+				real_size_population++; // increments real_size_population in the unit
+				if(real_size_population == size_population) // checks the goal
+					break; // left the loop
+			}
+		}
+	}
+	
+	// checks if real_size_population is 0
+	if(real_size_population == 0)
+	{
+		cout << "Empty initial population ;( Try again runs the algorithm...\n";
 		exit(1);
 	}
 }
@@ -177,8 +246,10 @@ void Genetic::showPopulation()
 		
 		for(int i = 0; i < graph->V; i++)
 			cout << vec[i] << " ";
+		cout << graph->initial_vertex;
 		cout << " | Cost: " << (*it).second << "\n";
 	}
+	cout << "\nPopulation size: " << real_size_population << endl;
 }
 
 
@@ -218,16 +289,51 @@ void Genetic::crossOver(vector<int>& parent)
 	
 	for(int i = point2 + 1; i < graph->V; i++)
 		child.push_back(parent[i]);
+		
+	// mutation ...
+	int mutation = rand() % 100 + 1; // random number in [1,100]
+	if(mutation <= mutation_rate) // checks if the random number <= mutation rate
+	{
+		// makes a mutation: changes positions of the cities
+		int city1, city2, aux;
+		
+		city1 = rand() % (graph->V - 1) + 1;
+		city2 = rand() % (graph->V - 1) + 1;
+		
+		// makes trading
+		aux = child[city1];
+		child[city1] = child[city2];
+		child[city2] = aux;
+	}
 	
 	int total_cost = isValidSolution(child);
 	
 	// checks if is a valid solution and not exists in the population
 	if(total_cost != -1 && !existsChromosome(child))
 	{
+		// add child in the population
+		
+		/*
+			Uses binary search algorithm to insert element in the
+			population vector. This serves to maintain the ordered vector.
+		*/
+		//insertBinarySearch();
+		
+		
+		// old implementation: to insert an element, the vector is ordered
+		
 		population.push_back(make_pair(child, total_cost)); // add in population
 		sort(population.begin(), population.end(), sort_pred()); // sort population
+		real_size_population++; // increments the real_size_population
 	}
 }
+
+
+void Genetic::insertBinarySearch()
+{
+	//int imin = 0;
+}
+
 
 void Genetic::run()
 {
@@ -235,11 +341,13 @@ void Genetic::run()
 
 	for(int i = 0; i < iterations; i++)
 	{
+		int  old_size_population = real_size_population;
+		
 		/* selects two parents (if exists) who will participate 
 			of the reproduction process */
-		if(size_population >= 2)
-		{
-			if(size_population == 2)
+		if(real_size_population >= 2)
+		{	
+			if(real_size_population == 2)
 			{
 				// applying crossover in the two parents
 				crossOver(population[0].first);
@@ -247,12 +355,15 @@ void Genetic::run()
 			}
 			else
 			{
+				// real_size_population > 2
+				
 				int parent1, parent2;
 			
 				do
 				{
-					parent1 = rand() % size_population;
-					parent2 = rand() % size_population;
+					// select two random parents
+					parent1 = rand() % real_size_population;
+					parent2 = rand() % real_size_population;
 				}while(parent1 == parent2);
 				
 				// applying crossover in the two parents
@@ -260,24 +371,34 @@ void Genetic::run()
 				crossOver(population[parent2].first);
 			}
 			
-			int diff_population = population.size() - size_population;
+			// gets difference to check if the population grew 
+			int diff_population = real_size_population - old_size_population;
 			
 			if(diff_population == 2)
 			{
 				// removes the two worst parents
 				population.pop_back();
 				population.pop_back();
+				
+				// decrements the real_size_population in 2 units
+				real_size_population -= 2;
 			}
 			else if(diff_population == 1)
+			{
 				population.pop_back(); // removes the worst parent
+				real_size_population--; // decrements the real_size_population in the unit
+			}
 		} 
 		else // population contains only 1 parent
 		{
 			// applying crossover in the parent
 			crossOver(population[0].first);
 			
-			if(population.size() > (unsigned)size_population)
+			if(real_size_population > old_size_population)
+			{
 				population.pop_back(); // removes the worst parent
+				real_size_population--; // decrements the real_size_population in the unit
+			}
 		}
 	}
 	
@@ -287,5 +408,6 @@ void Genetic::run()
 	const vector<int>& vec = population[0].first;
 	for(int i = 0; i < graph->V; i++)
 		cout << vec[i] << " ";
+	cout << graph->initial_vertex;
 	cout << " | Cost: " << population[0].second;
 }

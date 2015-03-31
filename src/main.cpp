@@ -6,7 +6,7 @@ int main()
 {
 	srand(time(NULL)); // random numbers
 	
-	// creates the graph with parameters: number of vertexes and initial vertex
+	// creates the graph1 with parameters: number of vertexes and initial vertex
 	Graph * graph1 = new Graph(5, 0);
 	
 	// add edges
@@ -31,8 +31,25 @@ int main()
 	graph1->addEdge(3, 4, 2);
 	graph1->addEdge(4, 3, 2);
 	
-	// parameters: the graph, population size and iterations
-	Genetic genetic(graph1, 50, 100);
+	// creates the graph2
+	Graph * graph2 = new Graph(4, 0);
+	
+	// add edges
+	graph2->addEdge(0, 1, 2);
+	graph2->addEdge(1, 0, 2);
+	graph2->addEdge(0, 2, 6);
+	graph2->addEdge(2, 0, 6);
+	graph2->addEdge(0, 3, 3);
+	graph2->addEdge(3, 0, 3);
+	graph2->addEdge(1, 3, 7);
+	graph2->addEdge(3, 1, 7);
+	graph2->addEdge(1, 2, 4);
+	graph2->addEdge(2, 1, 4);
+	graph2->addEdge(2, 3, 2);
+	graph2->addEdge(3, 2, 2);
+	
+	// parameters: the graph, population size, iterations and mutation rate
+	Genetic genetic(graph1, 50, 100, 5);
 		
 	genetic.run(); // runs the genetic algorithm
 	

@@ -54,14 +54,17 @@ private:
 	Graph* graph; // the graph
 	std::vector< my_pair > population; // each element is a pair: vector and total cost
 	int size_population; // size of population
+	int real_size_population; // real size population
 	int iterations; // amount of iterations
+	int mutation_rate; // mutation rate
 private:
 	void initialPopulation(); // generates the initial population
 public:
-	Genetic(Graph* graph, int amount_population, int iterations); // constructor
+	Genetic(Graph* graph, int amount_population, int iterations, int mutation_rate); // constructor
 	int isValidSolution(std::vector<int>& solution); // checks if a solution is valid
 	void showPopulation(); // shows population
 	void crossOver(std::vector<int>& parent); // makes the crossover
+	void insertBinarySearch(); // uses binary search to insert a element in the population
 	void run(); // runs genetic algorithm
 	bool existsChromosome(const std::vector<int> & v); // checks if exists the chromosome
 };
