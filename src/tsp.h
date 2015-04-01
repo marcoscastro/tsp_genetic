@@ -29,9 +29,11 @@ private:
 	std::vector<Edge> edges; // vector of edges
 	std::map<std::pair<int, int>, int> map_edges; // map of the edges
 public:
-	Graph(int V, int initial_vertex); // constructor
+	Graph(int V, int initial_vertex, bool random_graph = false); // constructor
 	void addEdge(int v1, int v2, int weight); // adds a edge
 	void showGraph(); // shows all the links of the graph
+	void generatesGraph(); // generates a random graph
+	void showInfoGraph(); // shows info of the graph
 	int existsEdge(int src, int dest); // checks if exists a edge
 	friend class Genetic; // to access private membres this class
 };

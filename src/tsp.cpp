@@ -13,7 +13,7 @@ Edge::Edge(int src, int dest, int weight) // constructor of Edge
 }
 
 
-Graph::Graph(int V, int initial_vertex) // constructor of Graph
+Graph::Graph(int V, int initial_vertex, bool random_graph) // constructor of Graph
 {
 	if(V < 1) // checks if number of vertexes is less than 1
 	{
@@ -24,6 +24,65 @@ Graph::Graph(int V, int initial_vertex) // constructor of Graph
 	this->V = V; // assigns the number of vertices
 	this->initial_vertex = initial_vertex; // assigns initial vertex
 	this->total_edges = 0; // initially the total of edges is 0
+	
+	if(random_graph)
+		generatesGraph();
+}
+
+
+void Graph::generatesGraph()
+{
+	vector<int> vec;
+	
+	// creates the vector
+	for(int i = 0; i < V; i++)
+		vec.push_back(i);
+	
+	// generates a random permutation
+	random_shuffle(vec.begin(), vec.end());
+	
+	initial_vertex = vec[0]; // updates initial vertex
+	
+	int i, weight;
+	for(i = 0; i <= V; i++)
+	{
+		weight = rand() % V + 1; // random weight in range [1,V]
+		
+		if(i + 1 < V)
+			addEdge(vec[i], vec[i + 1], weight);
+		else
+		{
+			// add last edge
+			addEdge(vec[i], vec[0], weight);
+			break;
+		}
+	}
+	
+	int limit_edges = V * (V - 1); // calculates the limit of edges
+	int size_edges = rand() % 2*limit_edges + 2*limit_edges;
+	
+	// add others edges randomly
+	for(int i = 0; i < size_edges; i++)
+	{
+		int src = rand() % V; // random source
+		int dest = rand() % V; // random destination
+		weight = rand() % V + 1; // random weight in range [1,V]
+		if(src != dest)
+		{
+			if(existsEdge(vec[src], vec[dest]) == -1)
+				addEdge(vec[src], vec[dest], weight);
+			if(existsEdge(vec[dest], vec[src]) == -1)
+				addEdge(vec[dest], vec[src], weight);
+		}
+	}
+}
+
+
+void Graph::showInfoGraph()
+{
+	cout << "Showing info of graph:\n";
+	cout << "Number of vertices: " << V;
+	cout << "\nNumber of edges: " << total_edges << "\n";
 }
 
 
@@ -130,7 +189,7 @@ void Genetic::initialPopulation() // generates the initial population
 	parent.push_back(graph->initial_vertex);
 	
 	// creates the parent
-	for(int i = 1; i < graph->V; i++)
+	for(int i = 0; i < graph->V; i++)
 	{
 		if(i != graph->initial_vertex)
 			parent.push_back(i);
@@ -144,36 +203,33 @@ void Genetic::initialPopulation() // generates the initial population
 		real_size_population++; // increments real_size_population
 	}
 	
-	// makes permutations until "size_population"
-	for(int i = 0; i < size_population; i++)
+	// makes permutations until "iterations"
+	for(int i = 0; i < iterations; i++)
 	{
-		vector<int> permutation;
-		
-		next_permutation(parent.begin() + 1, parent.begin() + graph->V); // gets permutation
-		for(int j = 0; j < graph->V; j++) // creates the permutation
-			permutation.push_back(parent[j]);
-			
-		int total_cost = isValidSolution(permutation); // checks if solution is valid
+		// generates a random permutation
+		random_shuffle(parent.begin()+1, parent.end());
+		int total_cost = isValidSolution(parent); // checks if solution is valid
 		
 		// checks if permutation is a valid solution and if not exists
-		if(total_cost != -1 && !existsChromosome(permutation))
+		if(total_cost != -1 && !existsChromosome(parent))
 		{
-			population.push_back(make_pair(permutation, total_cost)); // add in population
+			population.push_back(make_pair(parent, total_cost)); // add in population
 			real_size_population++; // increments real_size_population in the unit
-			if(real_size_population == size_population) // checks the goal
-				break; // left the loop
 		}
+		else
+			crossOver(parent);
+		if(real_size_population == size_population)
+				break;
 	}
 	
 	// checks if real_size_population is 0
 	if(real_size_population == 0)
 	{
-		cout << "Empty initial population ;( Try again runs the algorithm...\n";
+		cout << "\nEmpty initial population ;( Try again runs the algorithm...\n";
 		exit(1);
 	} 
 	else
 		sort(population.begin(), population.end(), sort_pred()); // sort population
-		
 }
 
 
@@ -324,17 +380,23 @@ void Genetic::run()
 			
 			if(diff_population == 2)
 			{
-				// removes the two worst parents
-				population.pop_back();
-				population.pop_back();
-				
-				// decrements the real_size_population in 2 units
-				real_size_population -= 2;
+				if(real_size_population > size_population)
+				{
+					// removes the two worst parents
+					population.pop_back();
+					population.pop_back();
+					
+					// decrements the real_size_population in 2 units
+					real_size_population -= 2;
+				}
 			}
 			else if(diff_population == 1)
 			{
-				population.pop_back(); // removes the worst parent
-				real_size_population--; // decrements the real_size_population in the unit
+				if(real_size_population > size_population)
+				{
+					population.pop_back(); // removes the worst parent
+					real_size_population--; // decrements the real_size_population in the unit
+				}
 			}
 		} 
 		else // population contains only 1 parent
@@ -342,7 +404,7 @@ void Genetic::run()
 			// applying crossover in the parent
 			crossOver(population[0].first);
 			
-			if(real_size_population > old_size_population)
+			if(real_size_population > size_population)
 			{
 				population.pop_back(); // removes the worst parent
 				real_size_population--; // decrements the real_size_population in the unit

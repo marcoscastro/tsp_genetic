@@ -62,9 +62,14 @@ int main()
 	graph3->addEdge(1, 2, 35);
 	graph3->addEdge(2, 1, 35);
 	
+	// creates random graph with 500 vertices
+	// parameter true is for generate the graph
+	Graph * graph4 = new Graph(500, 0, true);
+	//graph4->showInfoGraph();
+	
 	// parameters: the graph, population size, iterations and mutation rate
-	Genetic genetic(graph1, 50, 100, 5);
-		
+	Genetic genetic(graph4, 10, 1000, 5);
+
 	genetic.run(); // runs the genetic algorithm
 	
 	return 0;
