@@ -4,15 +4,6 @@
 using namespace std;
 
 
-Edge::Edge(int src, int dest, int weight) // constructor of Edge
-{
-	// assigns the parameters
-	this->src = src;
-	this->dest = dest;
-	this->weight = weight;
-}
-
-
 Graph::Graph(int V, int initial_vertex, bool random_graph) // constructor of Graph
 {
 	if(V < 1) // checks if number of vertexes is less than 1
@@ -59,7 +50,7 @@ void Graph::generatesGraph()
 	}
 	
 	int limit_edges = V * (V - 1); // calculates the limit of edges
-	int size_edges = rand() % 2*limit_edges + 2*limit_edges;
+	int size_edges = rand() % (2 * limit_edges) + (2 * limit_edges);
 	
 	// add others edges randomly
 	for(int i = 0; i < size_edges; i++)
@@ -69,10 +60,8 @@ void Graph::generatesGraph()
 		weight = rand() % V + 1; // random weight in range [1,V]
 		if(src != dest)
 		{
-			if(existsEdge(vec[src], vec[dest]) == -1)
-				addEdge(vec[src], vec[dest], weight);
-			if(existsEdge(vec[dest], vec[src]) == -1)
-				addEdge(vec[dest], vec[src], weight);
+			addEdge(vec[src], vec[dest], weight);
+			addEdge(vec[dest], vec[src], weight);
 		}
 	}
 }
@@ -80,18 +69,15 @@ void Graph::generatesGraph()
 
 void Graph::showInfoGraph()
 {
-	cout << "Showing info of graph:\n";
+	cout << "Showing info of graph:\n\n";
 	cout << "Number of vertices: " << V;
-	cout << "\nNumber of edges: " << total_edges << "\n";
+	cout << "\nNumber of edges: " << map_edges.size() << "\n";
 }
 
 
 void Graph::addEdge(int src, int dest, int weight) // add a edge
 {
-	Edge edge(src, dest, weight); // creates a edge
-	edges.push_back(edge); // adds edge in vector of edges
 	map_edges[make_pair(src, dest)] = weight; // adds edge in the map
-	total_edges++; // increments number total of edges
 }
 
 
@@ -113,7 +99,8 @@ int Graph::existsEdge(int src, int dest) // checks if exists a edge
 }
 
 
-Genetic::Genetic(Graph* graph, int size_population, int iterations, int mutation_rate) // constructor of Genetic
+// constructor of Genetic
+Genetic::Genetic(Graph* graph, int size_population, int iterations, int mutation_rate, bool show_population)
 {
 	if(size_population < 1) // checks if size of population is less than 1
 	{
@@ -130,6 +117,7 @@ Genetic::Genetic(Graph* graph, int size_population, int iterations, int mutation
 	this->real_size_population = 0;
 	this->iterations = iterations;
 	this->mutation_rate = mutation_rate;
+	this->show_population = show_population;
 }
 
 
@@ -203,11 +191,12 @@ void Genetic::initialPopulation() // generates the initial population
 		real_size_population++; // increments real_size_population
 	}
 	
-	// makes permutations until "iterations"
+	// makes random permutations until "iterations"
 	for(int i = 0; i < iterations; i++)
 	{
 		// generates a random permutation
-		random_shuffle(parent.begin()+1, parent.end());
+		random_shuffle(parent.begin() + 1, parent.begin() + (rand() % (graph->V - 1) + 1));
+		
 		int total_cost = isValidSolution(parent); // checks if solution is valid
 		
 		// checks if permutation is a valid solution and if not exists
@@ -216,18 +205,13 @@ void Genetic::initialPopulation() // generates the initial population
 			population.push_back(make_pair(parent, total_cost)); // add in population
 			real_size_population++; // increments real_size_population in the unit
 		}
-		else
-			crossOver(parent);
-		if(real_size_population == size_population)
-				break;
+		if(real_size_population == size_population) // checks size population
+			break;
 	}
 	
 	// checks if real_size_population is 0
 	if(real_size_population == 0)
-	{
-		cout << "\nEmpty initial population ;( Try again runs the algorithm...\n";
-		exit(1);
-	} 
+		cout << "\nEmpty initial population ;( Try again runs the algorithm...";
 	else
 		sort(population.begin(), population.end(), sort_pred()); // sort population
 }
@@ -290,16 +274,21 @@ void Genetic::crossOver(vector<int>& parent)
 	int mutation = rand() % 100 + 1; // random number in [1,100]
 	if(mutation <= mutation_rate) // checks if the random number <= mutation rate
 	{
-		// makes a mutation: changes positions of the cities
-		int city1, city2, aux;
+		// makes a mutation: random permutation
 		
-		city1 = rand() % (graph->V - 1) + 1;
-		city2 = rand() % (graph->V - 1) + 1;
+		int point1, point2;
 		
-		// makes trading
-		aux = child[city1];
-		child[city1] = child[city2];
-		child[city2] = aux;
+		point1 = rand() % (graph->V - 1) + 1;
+		point2 = rand() % (graph->V - 1) + 1;
+		
+		if(point1 > point2)
+		{
+			int aux = point2;
+			point2 = point1;
+			point1 = aux;
+		}
+		
+		random_shuffle(parent.begin() + point1, parent.begin() + point2);
 	}
 	
 	int total_cost = isValidSolution(child);
@@ -342,6 +331,9 @@ void Genetic::insertBinarySearch(vector<int>& child, int total_cost)
 void Genetic::run()
 {
 	initialPopulation(); // gets initial population
+	
+	if(real_size_population == 0)
+		return;
 
 	for(int i = 0; i < iterations; i++)
 	{
@@ -412,7 +404,8 @@ void Genetic::run()
 		}
 	}
 	
-	showPopulation(); // shows the population
+	if(show_population == true)
+		showPopulation(); // shows the population
 	
 	cout << "\nBest solution: ";
 	const vector<int>& vec = population[0].first;

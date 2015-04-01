@@ -8,17 +8,6 @@
 #include <stdlib.h> // srand, rand
 
 
-// class that represents the edge of graph
-class Edge
-{
-private:
-	int src, dest, weight; // source, destination and weight
-public:
-	Edge(int src, int dest, int weight); // constructor
-	friend class Graph; // to access private members this class
-};
-
-
 // class that represents the graph
 class Graph
 {
@@ -26,7 +15,6 @@ private:
 	int V; // number of vertices
 	int total_edges; // total of edges
 	int initial_vertex; // initial vertex
-	std::vector<Edge> edges; // vector of edges
 	std::map<std::pair<int, int>, int> map_edges; // map of the edges
 public:
 	Graph(int V, int initial_vertex, bool random_graph = false); // constructor
@@ -60,10 +48,11 @@ private:
 	int real_size_population; // real size population
 	int iterations; // amount of iterations
 	int mutation_rate; // mutation rate
+	bool show_population; // flag to show population
 private:
 	void initialPopulation(); // generates the initial population
 public:
-	Genetic(Graph* graph, int amount_population, int iterations, int mutation_rate); // constructor
+	Genetic(Graph* graph, int amount_population, int iterations, int mutation_rate, bool show_population = true); // constructor
 	int isValidSolution(std::vector<int>& solution); // checks if a solution is valid
 	void showPopulation(); // shows population
 	void crossOver(std::vector<int>& parent); // makes the crossover

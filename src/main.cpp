@@ -62,15 +62,27 @@ int main()
 	graph3->addEdge(1, 2, 35);
 	graph3->addEdge(2, 1, 35);
 	
-	// creates random graph with 500 vertices
-	// parameter true is for generate the graph
-	Graph * graph4 = new Graph(500, 0, true);
-	//graph4->showInfoGraph();
+	// creates random graph, parameter true is for generate the graph
+	Graph * graph4 = new Graph(1000, 0, true);
+	graph4->showInfoGraph();
 	
-	// parameters: the graph, population size, iterations and mutation rate
-	Genetic genetic(graph4, 10, 1000, 5);
+	int iterations = 100;
+	
+	// iterations 100, 1000, 10000, 100000, 1000000
+	while(iterations <= 1000000)
+	{
+		cout << "\nIterations: " << iterations << "\n";
+		
+		// parameters: the graph, population size, iterations and mutation rate
+		// optional parameters: show_population
+		Genetic genetic(graph4, 10, iterations, 5, false);
 
-	genetic.run(); // runs the genetic algorithm
+		const clock_t begin_time = clock(); // gets time
+		genetic.run(); // runs the genetic algorithm
+		cout << "\n\nTime for to run the genetic algorithm: " << float(clock () - begin_time) /  CLOCKS_PER_SEC << " seconds.\n"; // shows time in seconds
+		
+		iterations = iterations * 10;
+	}
 	
 	return 0;
 }
